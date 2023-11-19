@@ -13,9 +13,9 @@ public class Main {
         List<PlayerAction> playerActionList = IOStreamer.readPlayerAction(addressFirstHalf + "player_data.txt");
         List<MatchData> matchDataList = IOStreamer.readMatchData(addressFirstHalf + "match_data.txt");
 
-        new Processor(playerActionList,matchDataList);
+        Processor processor = new Processor(playerActionList,matchDataList);
 
-        List<Player> players = Processor.processLists();
+        List<Player> players = processor.processLists();
 
         IOStreamer.writeToFile("src" + File.separator + "results.txt", players);
     }

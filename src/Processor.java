@@ -6,22 +6,23 @@ import java.util.List;
 
 public class Processor {
 
-    private static List<PlayerAction> playerActionList;
-    private static List<MatchData> matchDataList;
+    private final List<PlayerAction> playerActionList;
+    private final List<MatchData> matchDataList;
 
     public Processor(List<PlayerAction> playerActionList, List<MatchData> matchDataList) {
         this.playerActionList = playerActionList;
         this.matchDataList = matchDataList;
     }
 
-    public static Player playerDeposits(Player p,PlayerAction pa){
+
+    private Player playerDeposits(Player p, PlayerAction pa){
         p.setAccountBalance(p.getAccountBalance() + pa.getCoinAmount());
 
         return p;
     }
-    public static Player playerBets(Player p,PlayerAction pa){
+    private Player playerBets(Player p,PlayerAction pa){
         if (p.getAccountBalance() >= pa.getCoinAmount()) {
-            for (MatchData match : matchDataList) {
+            for (MatchData match : this.matchDataList) {
                 if (match.getId().equals(pa.getMatchId())) {
 
 
@@ -40,25 +41,21 @@ public class Processor {
                         p.setPlayCount(p.getPlayCount() + 1);
                         p.setWinCount(p.getWinCount() + 1);
 
-
-                        //houseProfit -= moneyWon;
                         p.setMoneyWon(p.getMoneyWon() + pa.getCoinAmount());
 
                     }
-
                 }
             }
 
 
-        } else {//if player wants to bet more than his account
-
+        } else {
             p.setLegal(false);
             p.setIllegalAction(pa);
         }
 
         return p;
     }
-    public static Player playerWithdraws(Player p,PlayerAction pa){
+    private Player playerWithdraws(Player p,PlayerAction pa){
         if (p.getAccountBalance() >= pa.getCoinAmount() && pa.getCoinAmount() > 0) {
             p.setAccountBalance(p.getAccountBalance() - pa.getCoinAmount());
         } else {
@@ -67,16 +64,12 @@ public class Processor {
         }
         return p;
     }
-
-
-
-
-    public static List<Player> processLists(){
+    public List<Player> processLists(){
 
         List<Player> players = new ArrayList<>();
         int index;
 
-        for (PlayerAction pa : playerActionList){
+        for (PlayerAction pa : this.playerActionList){
             index = -1;
             for (Player p : players) {
                 index++;
@@ -85,17 +78,16 @@ public class Processor {
                     continue;
                 }
 
-                //find player from action
+
                 if (p.getId().equals(pa.getId())){
 
-
-                    if (pa.getAction() == 0 && pa.getCoinAmount() > 0){
+                    if (pa.getAction() == PlayerAction.Action.DEPOSIT && pa.getCoinAmount() > 0){
                         players.set(index,playerDeposits(p,pa));
 
-                    }else if (pa.getAction() == 1 && p.isLegal()){
+                    }else if (pa.getAction() == PlayerAction.Action.BET){
                         players.set(index,playerBets(p,pa));
 
-                    }else if (pa.getAction() == 2){
+                    }else if (pa.getAction() == PlayerAction.Action.WITHDRAW){
                         players.set(index,playerWithdraws(p,pa));
                     }
                 }
@@ -113,7 +105,7 @@ public class Processor {
             if(playerExists) continue;
 
             Player p;
-            if (pa.getAction() == 0) {
+            if (pa.getAction() == PlayerAction.Action.DEPOSIT) {
                 p = new Player(pa.getId(), pa.getCoinAmount(),0, 0, 0, true, null);
             } else{
                 p = new Player(pa.getId(), 0, 0, 0, 0, false, pa);

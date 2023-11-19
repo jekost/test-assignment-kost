@@ -3,6 +3,8 @@ package src;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 public class IOStreamer {
@@ -42,7 +44,6 @@ public class IOStreamer {
         if (file.exists() && file.canRead()){
             try (Scanner scanner = new Scanner(file)){
 
-                int actionInt;
                 PlayerAction player;
 
                 while (scanner.hasNextLine()){
@@ -54,18 +55,15 @@ public class IOStreamer {
 
                     switch (data[1]) {
                         case "DEPOSIT" -> {
-                            actionInt = 0;
-                            player = new PlayerAction(UUID.fromString(data[0]), actionInt, null, Integer.parseInt(data[3]), '0');
+                            player = new PlayerAction(UUID.fromString(data[0]), PlayerAction.Action.DEPOSIT, null, Integer.parseInt(data[3]), '0');
                             playerDataList.add(player);
                         }
                         case "BET" -> {
-                            actionInt = 1;
-                            player = new PlayerAction(UUID.fromString(data[0]), actionInt, UUID.fromString(data[2]), Integer.parseInt(data[3]), data[4].charAt(0));
+                            player = new PlayerAction(UUID.fromString(data[0]), PlayerAction.Action.BET, UUID.fromString(data[2]), Integer.parseInt(data[3]), data[4].charAt(0));
                             playerDataList.add(player);
                         }
                         default -> {//"WITHDRAW"
-                            actionInt = 2;
-                            player = new PlayerAction(UUID.fromString(data[0]), actionInt, null, Integer.parseInt(data[3]), '0');
+                            player = new PlayerAction(UUID.fromString(data[0]), PlayerAction.Action.WITHDRAW, null, Integer.parseInt(data[3]), '0');
                             playerDataList.add(player);
                         }
                     }
@@ -99,14 +97,19 @@ public class IOStreamer {
             for (Player p : players){
                 if (p.isLegal()){
 
-                    printWriter.print(p.getId() + " ");
-                    printWriter.print(p.getAccountBalance() + " ");
+                    printWriter.print(p.getId() + " " +
+                            p.getAccountBalance() + " ");
 
-                    float winRatio = (float)p.getWinCount() / (float)p.getPlayCount();
-                    winRatio = (float) Math.round(winRatio * 100) / 100;
+
+                    BigDecimal winRatio = BigDecimal.valueOf(0);
+
+                    if(p.getPlayCount() > 0) {
+                        BigDecimal bd1 = new BigDecimal(p.getWinCount());
+                        BigDecimal bd2 = new BigDecimal(p.getPlayCount());
+                        winRatio = bd1.divide(bd2, 2, RoundingMode.HALF_UP);
+                    }
 
                     printWriter.println(winRatio);
-
 
                     houseProfit -= p.getMoneyWon();
                     legalPlayerExists = true;
@@ -123,10 +126,11 @@ public class IOStreamer {
             for (Player p : players){
                 if (!p.isLegal()){
 
-                    printWriter.print(p.getIllegalAction().getId() + " ");
-                    printWriter.print(p.getIllegalAction().getActionString() + " ");
-                    printWriter.print(p.getIllegalAction().getMatchId() + " ");
-                    printWriter.print(p.getIllegalAction().getCoinAmount() + " ");
+                    printWriter.print(p.getIllegalAction().getId() + " " +
+                            p.getIllegalAction().getAction() + " " +
+                            p.getIllegalAction().getMatchId() + " " +
+                            p.getIllegalAction().getCoinAmount() + " "
+                    );
 
                     if(p.getIllegalAction().getBetSide() == '0'){
                         printWriter.println("null");

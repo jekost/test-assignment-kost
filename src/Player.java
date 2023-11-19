@@ -9,7 +9,6 @@ public class Player extends UUIDComparable {
     private int playCount;
     private int winCount;
     private boolean isLegal;
-
     private PlayerAction illegalAction;
 
     public Player(UUID id, long accountBalance, int moneyWon, int playCount, int winCount, boolean isLegal, PlayerAction illegalAction){
