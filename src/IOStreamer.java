@@ -1,9 +1,11 @@
+package src;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.*;
 
-public class DataReader{
+public class IOStreamer {
 
     public static List<MatchData> readMatchData(String address){
 
@@ -37,13 +39,13 @@ public class DataReader{
         List<PlayerAction> playerDataList = new ArrayList<>();
 
         File file = new File(address);
-        if (file.exists() && file.canRead()) {
-            try (Scanner scanner = new Scanner(file)) {
+        if (file.exists() && file.canRead()){
+            try (Scanner scanner = new Scanner(file)){
 
                 int actionInt;
                 PlayerAction player;
 
-                while (scanner.hasNextLine()) {
+                while (scanner.hasNextLine()){
                     String row = scanner.nextLine();
                     if(row.equals("")){
                         continue;
@@ -69,7 +71,7 @@ public class DataReader{
                     }
                 }
 
-            } catch(Exception e) {
+            }catch(Exception e){
                 System.out.println("An error has occurred.");
                 e.printStackTrace();
             }
@@ -81,12 +83,12 @@ public class DataReader{
     }
 
 
-    public static void writeToFile(String fileName, List<Player> players) {
+    public static void writeToFile(String fileName, List<Player> players){
 
         int houseProfit = 0;
 
 
-        try {
+        try{
             FileWriter fileWriter = new FileWriter(fileName);
             PrintWriter printWriter = new PrintWriter(fileWriter);
 
@@ -94,18 +96,16 @@ public class DataReader{
             boolean illegalPlayerExists = false;
 
 
-
-            //System.out.println("legal players:::");
-            for (Player p : players) {
-                if (p.isLegal()) {
-                    //System.out.print(p.getId() + " ");
-                    //System.out.print(p.getAccountBalance() + " ");
-                    //System.out.println( (float)p.getWinCount() / (float)p.getPlayCount() );
-
+            for (Player p : players){
+                if (p.isLegal()){
 
                     printWriter.print(p.getId() + " ");
                     printWriter.print(p.getAccountBalance() + " ");
-                    printWriter.println((float)p.getWinCount() / (float)p.getPlayCount());
+
+                    float winRatio = (float)p.getWinCount() / (float)p.getPlayCount();
+                    winRatio = (float) Math.round(winRatio * 100) / 100;
+
+                    printWriter.println(winRatio);
 
 
                     houseProfit -= p.getMoneyWon();
@@ -120,9 +120,8 @@ public class DataReader{
             }
 
 
-            System.out.println("illegal players:::");
-            for (Player p : players) {
-                if (!p.isLegal()) {
+            for (Player p : players){
+                if (!p.isLegal()){
 
                     printWriter.print(p.getIllegalAction().getId() + " ");
                     printWriter.print(p.getIllegalAction().getActionString() + " ");
@@ -130,10 +129,8 @@ public class DataReader{
                     printWriter.print(p.getIllegalAction().getCoinAmount() + " ");
 
                     if(p.getIllegalAction().getBetSide() == '0'){
-                        //System.out.println("null");
                         printWriter.println("null");
                     }else{
-                        //System.out.println(p.getIllegalAction().getBetSide());
                         printWriter.println(p.getIllegalAction().getBetSide());
                     }
 
@@ -147,7 +144,6 @@ public class DataReader{
                 printWriter.println("\n");
             }
 
-            //System.out.println("house profit: " + houseProfit);
             printWriter.print(houseProfit);
 
             printWriter.close();
